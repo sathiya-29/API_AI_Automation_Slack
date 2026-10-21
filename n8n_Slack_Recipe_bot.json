@@ -1,0 +1,178 @@
+{
+  "name": "n8n_Slack_Recipe_bot",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4a62fd6d-c9dc-4d3f-89c2-874cc64137c3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C20JDKDHD",
+          "mode": "list",
+          "cachedResultName": "all-recipe-bot"
+        },
+        "text": "Mutton briyani",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "c967784a-7176-49ce-b834-09760fbe1e7d",
+      "name": "Send a message",
+      "webhookId": "fc046979-9611-4120-957b-3234faff539f",
+      "credentials": {
+        "slackOAuth2Api": {
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a recipe ingredient assistant.\n\nThe user has requested this recipe:\n\n{{ $json.message.text }}\n\nIdentify all ingredients/products required to prepare this recipe.\n\nReturn ONLY the following format:\n\n🛒 *Ingredients Required*\n\n• Ingredient: quantity\n• Ingredient: quantity\n• Ingredient: quantity\n\nRules:\n- Include all required ingredients.\n- Include approximate quantities.\n- Mention optional ingredients as \"(optional)\".\n- Do not provide cooking instructions.\n- Do not provide explanations.\n- Do not use JSON.\n- Do not use a code block.\n- Include the complete ingredient list."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "67ea5385-0e4e-4ae9-b5a2-1c22ffa0bac7",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const recipe = $json.output[0].content[0].text;\n\nreturn [\n  {\n    json: {\n      message: recipe\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        0
+      ],
+      "id": "c1913d7a-baae-4cc4-9dab-51ab9569cf86",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C20JDKDHD",
+          "mode": "list",
+          "cachedResultName": "all-recipe-bot"
+        },
+        "text": "={{ $json.message }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "b4dead04-f3df-4d64-9c67-fa750f261ff5",
+      "name": "Send a message1",
+      "webhookId": "5cda3d65-5178-4c79-9857-2e97ff14a476",
+      "credentials": {
+        "slackOAuth2Api": {
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
